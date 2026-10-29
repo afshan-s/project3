@@ -159,26 +159,5 @@ int main(int argc, char *argv[])
         fprintf(out2, "%d\n", physical_address);
         fprintf(out3, "%d\n", value);
     }
-
-
-       
-       
-       
-       
-       
-       
-       
-       
-       
         }
-    }
-   
-   
-   
-   
-   
-   
-    }
-
-
-}
+    
