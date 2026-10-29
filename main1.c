@@ -121,7 +121,55 @@ int main(int argc, char *argv[])
             next_free_frame++;
 
             //read requested page from the backing store
+            if (fseek(backing_store, (long)page_number * PAGE_SIZE, SEEK_SET) != 0 ||
+                fread(&physical_memory[frame_number*PAGE_SIZE],
+                        sizeof(signed char), PAGE_SIZE, backing_store) != PAGE_SIZE){
+                fprintf(stderr, "Error: Could not read a page from" "BACKING_STORE.bin.\n");
 
+                fclose(address_file);
+                fclose(backing_store);
+                fclose(out1);
+                fclose(out2);
+                fclose(out3);
+
+                return 1;
+            }
+
+            //record new page-to-frame mapping
+            page_table[page_number] = frame_number;
+        }
+
+            //insert page-to-frame mapping into the TLB
+            //when it's full, FIFO will replace the oldest TLB entry
+            tlb[next_tlb_entry].page_number = page_number;
+            tlb[next_tlb_entry].frame_number = frame_number;
+            tlb[next_tlb_entry].valid = 1;
+
+            next_tlb_entry = (next_tlb_entry + 1) % TLB_SIZE;
+        }
+
+        //combine frame number and original offset
+        int physical_address = frame_number*PAGE_SIZE + offset;
+
+        //retrieve signed byte stored at that physical address
+        int value = physical_memory[physical_address];
+
+        //each output file contains numbers only
+        fprintf(out1, "%d\n", input_address);
+        fprintf(out2, "%d\n", physical_address);
+        fprintf(out3, "%d\n", value);
+    }
+
+
+       
+       
+       
+       
+       
+       
+       
+       
+       
         }
     }
    
