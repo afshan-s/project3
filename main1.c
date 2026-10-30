@@ -8,7 +8,7 @@
 #define TLB_SIZE 16
 #define MEMORY_SIZE (PAGE_SIZE * NUM_FRAMES)
 
-//TLB entry stores page number and its corresponding frame
+//stores page number and its matching frame number in the TLB
 typedef struct {
     int page_number;
     int frame_number;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     FILE *out2 = fopen("out2.txt", "w");
     FILE *out3 = fopen("out3.txt", "w");
 
-    //check if every required file is opening succesfully
+    //check that all required files opened successfully
     if (address_file == NULL || backing_store == NULL || out1 == NULL || out2 == NULL || out3 == NULL) {
         fprintf(stderr, "Error: Could not open a required file.\n");
 
@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //physical memory of 256 frame, every one holding 256 bytes
+    //physical memory of 256 frames, with 256 bytes in each frame
     signed char physical_memory[MEMORY_SIZE];
     //-1 means the page isn't currently in memory
     int page_table[NUM_PAGES];
-    //initialize every page-table entry as invalid
+    //set every page-table entry to -1 to show that no pages are loaded yet
     for (int i = 0; i < NUM_PAGES; i++) {
         page_table[i] = -1;
     }
@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
         tlb[i].valid = 0;
     }
 
-    //FIFO - keeps track of the next TLB entry to replace
+    //keeps track of which TLB entry will be replaced next using FIFO
     int next_tlb_entry = 0;
 
-    //Frames assigned in order when pages first enter memory
+    //assign frames in order as new pages are loaded
     int next_free_frame = 0;
 
     int page_faults = 0;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     
     uint16_t logical_address = (uint16_t)((uint32_t)input_address & 0xFFFFu);
 
-    //extracting the 8-bit page number and 8-bit offset
+    //extract the 8-bit page number and 8-bit offset from the logical address
     int page_number = (logical_address >> 8) & 0xFF;
     int offset = logical_address & 0xFF;
 
@@ -100,11 +100,11 @@ int main(int argc, char *argv[])
     if (!tlb_found) {
         frame_number = page_table[page_number];
 
-        // if frame number = -1, page isn't in memory
+        // if frame number = -1, requested page isn't in memory
         if (frame_number == -1) {
             page_faults++;
 
-            //each new page gets the next available frame
+            //load the page into the next available frame
             if (next_free_frame >= NUM_FRAMES) {
                 fprintf(stderr, "Error: No free physical frames left.\n");
 
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
                 return 1;
             }
 
-            //record new page-to-frame mapping
+            //update the page table with the new page-to-frame mapping
             page_table[page_number] = frame_number;
         }
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
         fprintf(out2, "%d\n", physical_address);
         fprintf(out3, "%d\n", value);
     }
-        //detect input file that containing invalid text
+        //check for invalid data in the input data
         if (scan_result != EOF) {
             fprintf(stderr, "Error: Invalid data in the address file.\n");
 
