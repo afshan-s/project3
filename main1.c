@@ -159,5 +159,43 @@ int main(int argc, char *argv[])
         fprintf(out2, "%d\n", physical_address);
         fprintf(out3, "%d\n", value);
     }
+        //detect input file that containing invalid text
+        if (scan_result != EOF) {
+            fprintf(stderr, "Error: Invalid data in the address file.\n");
+
+            fclose(address_file);
+            fclose(backing_store);
+            fclose(out1);
+            fclose(out2);
+            fclose(out3);
+
+            return 1;
+        }
+
+        //calculate rates without dividing by zero
+        double page_fault_rate = 0.0;
+        double tlb_hit_rate = 0.0;
+
+        if (total_addresses > 0) {
+            page_fault_rate = (double)page_faults / total_addresses;
+
+            tlb_hit_rate = (double)tlb_hits / total_addresses;
+        }
+
+        //prints stats to terminal instead of output files
+        printf("Total addresses: %d\n", total_addresses);
+        printf("Page faults: %d\n", page_faults);
+        printf("Page-fault rate: %.3f\n", page_fault_rate);
+        printf("TLB hits: %d\n", tlb_hits);
+        printf("TLB hit rate: %.3f\n", tlb_hit_rate);
+
+        //closes all files
+        fclose(address_file);
+        fclose(backing_store);
+        fclose(out1);
+        fclose(out2);
+        fclose(out3);
+        return 0;
+
         }
     
