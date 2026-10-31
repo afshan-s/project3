@@ -8,7 +8,7 @@
 #define TLB_SIZE 16
 #define MEMORY_SIZE (PAGE_SIZE * NUM_FRAMES)
 
-//TLB entry stores page number and its corresponding frame
+//stores page number and its matching frame number in the TLB
 typedef struct {
     int page_number;
     int frame_number;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     FILE *out2 = fopen("out2.txt", "w");
     FILE *out3 = fopen("out3.txt", "w");
 
-    //check if every required file is opening succesfully
+   //check that all files opened successfully
     if (address_file == NULL || backing_store == NULL || out1 == NULL || out2 == NULL || out3 == NULL) {
         fprintf(stderr, "Error: Could not open a required file.\n");
 
@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //physical memory of 128 frame, each holding 256 bytes
+    //physical memory of 128 frame w/ 256 bytes in each frame 
     signed char physical_memory[MEMORY_SIZE];
     //-1 means the page isn't currently in memory
     int page_table[NUM_PAGES];
-    //initialize every page-table entry as invalid
+    //set each page table entry to -1 to show that no pages are loaded yet 
     for (int i = 0; i < NUM_PAGES; i++) {
         page_table[i] = -1;
     }
@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
         tlb[i].valid = 0;
     }
 
-    //FIFO - keeps track of the next TLB entry to replace
+    //keeps track of which TLB entry will be replaced next using FIFO
     int next_tlb_entry = 0;
 
-    //Frames assigned in order when pages first enter memory
+    //assign in order as new pages are loaded
     int next_free_frame = 0;
     
     //stores which page is currently in each frame
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     //tracks when each frame was last used
     int last_used[NUM_FRAMES] = {0};
 
-    //initialize every frame as empty
+    //set each frame to -1 to show that it is empty
     for (int i = 0; i < NUM_FRAMES; i++) {
         frame_to_page[i] = -1;
         last_used[i] = 0;
@@ -118,13 +118,13 @@ int main(int argc, char *argv[])
         if (frame_number == -1) {
             page_faults++;
 
-            //use next free frame if physical memory is not full
+            //use next free frame if physical memory isn't full yet
             if (next_free_frame < NUM_FRAMES) {
                 frame_number = next_free_frame;
                 next_free_frame++;
             }
             else {
-                //LRU - replace the  page that was used least recently
+                //replace the page that was used least recently using LRU
                 frame_number = 0;
 
                 int least_recently_used = last_used[0];
@@ -138,10 +138,10 @@ int main(int argc, char *argv[])
 
                  int old_page = frame_to_page[frame_number];
 
-            //invalidate the old page-table entry
+            //mark the old page-table entry as invalid
             page_table[old_page] = -1;
 
-            //invalidate the old page's TLB entry   
+            //remove the old page's entry 
             for (int i = 0; i < TLB_SIZE; i++) {
                 if (tlb[i].valid && tlb[i].page_number == old_page) {
                     tlb[i].valid = 0;
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
                 return 1;
             }
 
-            //record new page-to-frame mapping
+            //update page table page -> frame mapping
             page_table[page_number] = frame_number;
 
             //record which page is currently stored in this frame
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
         fprintf(out2, "%d\n", physical_address);
         fprintf(out3, "%d\n", value);
     }
-        //detect input file that containing invalid text
+        //check for incorrect input data
         if (scan_result != EOF) {
             fprintf(stderr, "Error: Invalid data in the address file.\n");
 
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        //calculate rates without dividing by zero
+        //calculate rates 
         double page_fault_rate = 0.0;
         double tlb_hit_rate = 0.0;
 
